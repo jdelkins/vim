@@ -9,7 +9,7 @@
 !define VIMSRC "..\src"
 
 # Location of runtime files
-!define VIMRT ".."
+!define VIMRT "..\runtime"
 
 # Location of extra tools: diff.exe
 !define VIMTOOLS ..\..
@@ -23,6 +23,7 @@
 
 !define VER_MAJOR 7
 !define VER_MINOR 4
+!define VER_PATCH 383
 
 # ----------- No configurable settings below this line -----------
 
@@ -30,20 +31,20 @@
 !include LogicLib.nsh
 !include x64.nsh
 
-Name "Vim ${VER_MAJOR}.${VER_MINOR}"
-OutFile gvim${VER_MAJOR}${VER_MINOR}.exe
+Name "Vim ${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}"
+OutFile gvim-${VER_MAJOR}-${VER_MINOR}-${VER_PATCH}.exe
 CRCCheck force
 SetCompressor lzma
 SetDatablockOptimize on
 RequestExecutionLevel highest
 
-ComponentText "This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer."
+ComponentText "This will install Vim ${VER_MAJOR}.${VER_MINOR}.${VER_PATCH} on your computer."
 DirText "Choose a directory to install Vim (must end in 'vim')"
 Icon icons\vim_16c.ico
 # NSIS2 uses a different strategy with six different images in a strip...
 #EnabledBitmap icons\enabled.bmp
 #DisabledBitmap icons\disabled.bmp
-UninstallText "This will uninstall Vim ${VER_MAJOR}.${VER_MINOR} from your system."
+UninstallText "This will uninstall Vim ${VER_MAJOR}.${VER_MINOR}.${VER_PATCH} from your system."
 UninstallIcon icons\vim_uninst_16c.ico
 
 # On NSIS 2 using the BGGradient causes trouble on Windows 98, in combination
@@ -83,14 +84,14 @@ UninstPage instfiles
 
 Function .onInit
   MessageBox MB_YESNO|MB_ICONQUESTION \
-	"This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer.$\n Continue?" \
+	"This will install Vim ${VER_MAJOR}.${VER_MINOR}.${VER_PATCH} on your computer.$\n Continue?" \
 	IDYES NoAbort
 	    Abort ; causes installer to quit.
 	NoAbort:
 
   # run the install program to check for already installed versions
   SetOutPath $TEMP
-  File /oname=install.exe ${VIMSRC}\installw32.exe
+  File /oname=install.exe ${VIMSRC}\install.exe
   ExecWait "$TEMP\install.exe -uninstall-check"
   Delete $TEMP\install.exe
 
@@ -187,13 +188,15 @@ Section "Vim executables and runtime files"
 
 	SetOutPath $0
 	File /oname=gvim.exe ${VIMSRC}\gvim_ole.exe
-	File /oname=install.exe ${VIMSRC}\installw32.exe
-	File /oname=uninstal.exe ${VIMSRC}\uninstalw32.exe
+	File /oname=install.exe ${VIMSRC}\install.exe
+	File /oname=uninstal.exe ${VIMSRC}\uninstal.exe
 	File ${VIMSRC}\vimrun.exe
-	File /oname=xxd.exe ${VIMSRC}\xxdw32.exe
+	File /oname=xxd.exe ${VIMSRC}\xxd\xxd.exe
 	File ${VIMTOOLS}\diff.exe
-	File ${VIMRT}\vimtutor.bat
-	File ${VIMRT}\README.txt
+#	File ${VIMRT}\vimtutor.bat
+#	File ${VIMRT}\README.txt
+	File ..\vimtutor.bat
+	File ..\README.txt
 	File ..\uninstal.txt
 	File ${VIMRT}\*.vim
 	File ${VIMRT}\rgb.txt
@@ -254,7 +257,7 @@ Section "Vim console program (vim.exe)"
 	    Goto lbl_done
 	lbl_winnt:
 	    # Windows NT/2000/XP and later
-	    File /oname=vim.exe ${VIMSRC}\vimw32.exe
+	    File /oname=vim.exe ${VIMSRC}\vim.exe
 	lbl_done:
 	StrCpy $2 "$2 vim view vimdiff"
 SectionEnd
@@ -361,7 +364,7 @@ SectionEnd
 		File ${VIMRT}\keymap\README.txt
 		File ${VIMRT}\keymap\*.vim
 		SetOutPath $0
-		File ${VIMRT}\libintl.dll
+		#File ${VIMRT}\libintl.dll
 	SectionEnd
 !endif
 
